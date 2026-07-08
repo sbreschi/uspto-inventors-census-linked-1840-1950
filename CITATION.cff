@@ -37,8 +37,10 @@ keywords:
   - RapidFuzz
 repository-code: "https://github.com/sbreschi/uspto-inventors-census-linked-1840-1950"
 license: MIT
-# TODO: complete with the final DOI and date once the paper is accepted.
+doi: 10.5281/zenodo.21263304
 version: "1.0.0"
+date-released: "2026-07-08"
+# TODO: add the paper DOI to preferred-citation once the paper is accepted.
 preferred-citation:
   type: article
   title: "A Novel Dataset for Historical Innovation Studies. Linking USPTO Patents and U.S. Census Data from 1840 to 1950"
