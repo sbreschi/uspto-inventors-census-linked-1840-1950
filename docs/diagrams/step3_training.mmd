@@ -1,0 +1,20 @@
+flowchart TD
+    s2["Step 2: Filtering<br/>matched_candidates"]
+
+    GT["Ground truth<br/>Manually verified<br/>patent-inventor ↔ census"]
+
+    GT --> merged["3_merge_features.py<br/>Wire ground truth labels<br/>true_histid, true_match"]
+
+    s2 --> merged
+
+    ORPHANS["Orphans<br/>Ground-truth groups<br/>lost in blocking/filtering"]
+    DECEASED["Deceased hard negatives<br/>Inventors reported deceased<br/>on their own patents<br/>provable non-matches"]
+
+    ORPHANS --> merged
+    DECEASED --> merged
+
+    merged --> BUILD["ml_model/1_build_training.py<br/>Tag each group:<br/>matched / orphan / hard_negative"]
+
+    BUILD --> TRAIN["Training dataset<br/>Labeled positive + negatives"]
+
+    TRAIN --> s4["Step 4: Features"]

@@ -1,0 +1,14 @@
+flowchart TD
+    s0["Step 0: Pre-clean census"]
+
+    s0 --> b1a["1a: County cosine<br/>TF-IDF + FAISS<br/>nearest-neighbor"]
+    s0 --> b1bc["1b: County Levenshtein<br/>RapidFuzz<br/>normalized distance"]
+    s0 --> b1bs["1b: State Levenshtein<br/>RapidFuzz<br/>+ token-sort"]
+    s0 --> b1c["1c: Nationwide cosine<br/>FAISS IVF-PQ<br/>cross-state movers"]
+
+    b1a --> collect["2a: Collect & deduplicate<br/>Merge 4 sources into<br/>candidate table"]
+    b1bc --> collect
+    b1bs --> collect
+    b1c --> collect
+
+    collect --> s2["Step 2: Filtering"]

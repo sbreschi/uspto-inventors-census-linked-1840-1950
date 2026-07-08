@@ -1,0 +1,16 @@
+flowchart TD
+    IN["Inputs: patents, census,<br/>crosswalks, ground truth"]
+
+    IN --> s0["Step 0<br/>Pre-clean census"]
+    s0 --> s1["Step 1<br/>Blocking & candidate ID<br/>4 name-matching algorithms"]
+    s1 --> s2b["Step 2<br/>Filtering<br/>13-filter cascade"]
+
+    s2b --> s3["Step 3–4<br/>Feature engineering<br/>25 features + add-ons"]
+
+    s3 --> s5["Step 5<br/>ML Prediction<br/>Random forest classifier"]
+
+    s5 --> s6["Step 6<br/>CTP Consistency<br/>Cross-wave annotation"]
+
+    s6 --> OUT[["Final linked dataset"]]
+
+    s5 -.-> VALID["Optional: validation<br/>executor/widow-spouse"]

@@ -1,0 +1,57 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the accompanying Scientific Data paper."
+title: "A record-linkage pipeline for matching USPTO patent inventors to U.S. census individuals"
+authors:
+  - family-names: Breschi
+    given-names: Stefano
+    affiliation: "Bocconi University"
+  - family-names: Hellinga
+    given-names: Zenne
+    affiliation: "Utrecht University"
+  - family-names: Morrison
+    given-names: Andrea
+    affiliation: "University of Pavia and Icrios, Bocconi University"
+  - family-names: Nagar
+    given-names: Jay Prakash
+    affiliation: "Duke University"
+  - family-names: Tarasconi
+    given-names: Gianluca
+    affiliation: "IPQuants AG"
+keywords:
+  # shared with the Zenodo data deposit (keep the two lists in sync)
+  - Record linkage
+  - Patents
+  - USPTO
+  - Historical Census
+  - Machine learning
+  - Entity resolution
+  - Inventors
+  - Economic history
+  - IPUMS
+  # implementation-specific (code repo only)
+  - Random forest
+  - Blocking
+  - Semantic relatedness
+  - JobBERT
+  - FAISS
+  - RapidFuzz
+repository-code: "https://github.com/sbreschi/uspto-inventors-census-linked-1840-1950"
+license: MIT
+# TODO: complete with the final DOI and date once the paper is accepted.
+version: "1.0.0"
+preferred-citation:
+  type: article
+  title: "A Novel Dataset for Historical Innovation Studies. Linking USPTO Patents and U.S. Census Data from 1840 to 1950"
+  journal: "Scientific Data"
+  year: 2026
+  authors:
+    - family-names: Breschi
+      given-names: Stefano
+    - family-names: Hellinga
+      given-names: Zenne
+    - family-names: Morrison
+      given-names: Andrea
+    - family-names: Nagar
+      given-names: Jay Prakash
+    - family-names: Tarasconi
+      given-names: Gianluca

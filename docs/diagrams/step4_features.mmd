@@ -1,0 +1,26 @@
+flowchart TD
+    s3["Step 3: Training labels<br/>matched_candidates"]
+
+    subgraph ADDON1["Relatedness add-on"]
+        r1["1: Patent strings<br/>Title + USPC + NBER"]
+        r2["2: Build strings<br/>Occupation + patent"]
+        r3["3: JobBERT-v2<br/>Embeddings"]
+        r4["4: Cosine scores<br/>relatedness_short<br/>relatedness_long"]
+        r1 --> r2 --> r3 --> r4
+    end
+
+    subgraph ADDON2["Name rarity add-on"]
+        rar["Surname frequency<br/>per census wave<br/>surname_logfreq<br/>n_candidates"]
+    end
+
+    s3 --> ADDON1
+    s3 --> ADDON2
+
+    ADDON1 --> merge["3_merge_features.py<br/>Concatenate relatedness<br/>Attach rarity + n_candidates"]
+    ADDON2 --> merge
+
+    merge --> FEATURES["25 features in 6 groups:<br/>string similarity, geographic distance,<br/>age at patenting, occupational relevance,<br/>semantic relatedness, name distinctiveness"]
+
+    FEATURES --> select["4_select_ml_columns.py<br/>Publication projection<br/>Drop personal names"]
+
+    select --> FINAL["ML feature table<br/>Ready for training"]

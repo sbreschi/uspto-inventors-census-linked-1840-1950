@@ -1,0 +1,27 @@
+flowchart TD
+    TRAIN["Training dataset<br/>from Step 3<br/>ground truth + orphans<br/>+ hard negatives"]
+
+    FEATURES["Full feature table<br/>from Step 4<br/>25 features<br/>all candidates"]
+
+    TRAIN --> SPLIT["Split 80/20<br/>GroupShuffleSplit<br/>on patent-inventor + wave"]
+
+    SPLIT --> TR["Training set<br/>80%"]
+    SPLIT --> TEST["Test set<br/>20%"]
+
+    TR --> BUILD["ml_model/1_build_training.py<br/>Tag patinv_type:<br/>matched / orphan / hard_negative"]
+
+    BUILD --> CLF["ml_model/2_train_classifier.py<br/>Random Forest classifier<br/>300 estimators, max_depth=20,<br/>max_features=8<br/>alternatives: XGBoost, SVC"]
+
+    TEST --> EVAL["Evaluate on test set<br/>Precision 0.960<br/>Recall 0.927<br/>F₁ 0.943"]
+
+    CLF --> MODEL["Trained classifier<br/>rf.pkl"]
+
+    EVAL -.-> REPORT["Diagnostics report<br/>feature importance<br/>calibration curves<br/>leakage checks"]
+
+    FEATURES --> PRED["ml_model/3_predict.py<br/>Score all candidates"]
+
+    MODEL --> PRED
+
+    PRED --> SELECT["Select top-1<br/>per patent-inventor-wave<br/>highest probability"]
+
+    SELECT --> OUT["Accepted links<br/>with probability scores<br/>accept_threshold=0"]
