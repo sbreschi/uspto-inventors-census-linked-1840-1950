@@ -32,7 +32,7 @@ preceded by a census pre-cleaning stage:
 The core pipeline is a linear chain (Step 0 → 6) into which three optional feature/label
 add-ons feed at Step 3–4:
 
-![Pipeline map: Steps 0-6 from inputs to the final linked dataset](docs/diagrams/pipeline_map.svg)
+<img src="docs/diagrams/pipeline_map.svg" alt="Pipeline map: Steps 0-6 from inputs to the final linked dataset" width="440">
 
 ### Step 1 detailed: Blocking & candidate identification
 
