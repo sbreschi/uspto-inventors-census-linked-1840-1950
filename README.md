@@ -601,7 +601,7 @@ python tests/smoke_test_name_rarity.py
 
 ## Data availability
 
-The linked dataset is deposited on Zenodo (<https://zenodo.org/uploads/21078985>) as a
+The linked dataset is hosted on Zenodo (<https://zenodo.org/uploads/21078985>) as a
 CSV, one row per matched patent-inventor ↔ census individual, keyed on
 `(PatInvID, histid, census_year)`. Released columns include `histid`, `PatInvID`,
 `pubnumber`, `pubyear`, `census_year`, `inventor_name`, `leven_simil`, `county_inv`,
