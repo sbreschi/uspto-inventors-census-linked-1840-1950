@@ -2,8 +2,8 @@
 
 This repository contains the record-linkage pipeline that matches historical USPTO
 patent inventors (1840–1950) to individuals in the U.S. decennial census
-(1850–1940, excluding the destroyed 1890 wave). It accompanies a (submitted) *Scientific Data*
-descriptor; the linked dataset is deposited on Zenodo
+(1850–1940,excluding the 1890 wave, destroyed by fire). It accompanies a (submitted) *Scientific Data*
+descriptor; the linked dataset is archived on Zenodo
 (<https://zenodo.org/uploads/21078985>).
 
 The pipeline is organised as the **six steps** of the descriptor's Methods section,
