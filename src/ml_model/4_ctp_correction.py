@@ -14,7 +14,7 @@ removes a link or overwrites a predicted histid. Every 3_predict row is kept exa
 as-is (its `histid` stays the model's prediction). CTP is used only to
 
   (a) ANNOTATE each model link with
-        - `ctp_flag`   : 1 iff the PatInvID is matched to >1 wave and the matched
+        - `ctp_flag`   : 1 if the PatInvID is matched to >1 wave and the matched
                         histids do NOT form one CTP-connected chain (i.e. they are not
                         the same individual per CTP). Anchor-free; broadcast to every
                         row of the PatInvID.
