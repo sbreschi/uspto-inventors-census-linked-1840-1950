@@ -14,10 +14,16 @@ removes a link or overwrites a predicted histid. Every 3_predict row is kept exa
 as-is (its `histid` stays the model's prediction). CTP is used only to
 
   (a) ANNOTATE each model link with
-        - `ctp_flag`   : 1 if the PatInvID is matched to >1 wave and the matched
-                        histids do NOT form one CTP-connected chain (i.e. they are not
-                        the same individual per CTP). Anchor-free; broadcast to every
-                        row of the PatInvID.
+        - `ctp_flag`   : 1 if the PatInvID is matched to >1 wave and 1 iff CTP actively 
+                         CONTRADICTS the model, i.e. CTP traces the anchor histid into 
+                         some OTHER matched wave but resolves it to a DIFFERENT histid 
+                         than the model matched there (a "replaced" wave). A matched wave 
+                         the anchor cannot reach in CTP (histid_ctp null: the histid is 
+                         absent from CTP, or CTP fans out ambiguously) is UNVERIFIABLE 
+                         and never flags. Anchor-level; broadcast to every row of the 
+                         PatInvID. Equivalent to "the PatInvID has >=1 'replaced' row" 
+                         (uses the same anchor + histid_ctp as ctp_action, so the two are 
+                         always consistent).
         - `histid_ctp`: CTP's own view of this wave's histid, propagated from the
                         inventor's single highest-probability matched link (the
                         "anchor"; tie-break: closest to pubyear, then earliest wave).
@@ -241,26 +247,14 @@ def main(argv=None):
                              .otherwise(None).alias("histid_ctp"))
                .select("PatInvID", "census_year", "histid_ctp"))
 
-    # ---- ctp_flag: every consecutive matched-wave pair must be CTP-linked ----
-    m = (links.select("PatInvID", "census_year", "histid_uc")
-         .sort(["PatInvID", "census_year"])
-         .with_columns([
-             pl.col("census_year").shift(-1).over("PatInvID").alias("next_year"),
-             pl.col("histid_uc").shift(-1).over("PatInvID").alias("next_hist"),
-         ]).filter(pl.col("next_year").is_not_null()))
-    direct_key = edges.select("y_from", "h_from", "y_to", "h_to").with_columns(
-        pl.lit(True).alias("_direct"))
-    m = m.join(direct_key, left_on=["census_year", "histid_uc", "next_year", "next_hist"],
-               right_on=["y_from", "h_from", "y_to", "h_to"], how="left")
-    if args.bridge_gap:
-        bridge_key = bridge_edges.with_columns(pl.lit(True).alias("_bridge"))
-        m = m.join(bridge_key, left_on=["census_year", "histid_uc", "next_year", "next_hist"],
-                   right_on=["y_from", "h_from", "y_to", "h_to"], how="left")
-        linked = pl.col("_direct").fill_null(False) | pl.col("_bridge").fill_null(False)
-    else:
-        linked = pl.col("_direct").fill_null(False)
-    m = m.with_columns(linked.alias("linked"))
-    tp = (m.group_by("PatInvID").agg((~pl.col("linked")).any().alias("_incons"))
+    # ---- ctp_flag: 1 iff CTP actively CONTRADICTS the model ----
+    tp = (links.select("PatInvID", "census_year", "histid_uc")
+          .join(av_view, on=["PatInvID", "census_year"], how="left")
+          .join(anchor, on="PatInvID", how="left")
+          .filter(pl.col("census_year") != pl.col("anchor_year"))
+          .with_columns(((pl.col("histid_ctp").is_not_null())
+                         & (pl.col("histid_ctp") != pl.col("histid_uc"))).alias("_contra"))
+          .group_by("PatInvID").agg(pl.col("_contra").any().alias("_incons"))
           .with_columns(pl.when(pl.col("_incons")).then(1).otherwise(0)
                         .cast(pl.Int8).alias("ctp_flag"))
           .select("PatInvID", "ctp_flag"))
