@@ -675,6 +675,73 @@ def main(argv=None):
                             how="left", left_index=True, right_index=True)
     df_test["predicted_probability"] = y_pred_proba
 
+    # --- Plot Precision/Recall/F1 vs probability threshold (held-out test set only) ---
+    if args.report:
+        from _viz_common import configure_matplotlib
+        from matplotlib.ticker import FuncFormatter
+        from scipy.interpolate import make_interp_spline
+
+        # Palette mirrors the sibling technical-validation figures.
+        INK, INK_2, MUTED, GRID, BASELINE = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
+        PRECISION_COLOR, RECALL_COLOR, F1_COLOR = "#0072b2", "#e69f00", "#009e73"
+
+        curve_df = threshold_sweep(df_test, model_name, cfg, args.occdict_name,
+                                   args.test_size, args.random_state,
+                                   model_random_state=getattr(model, "random_state", None),
+                                   step=0.01)
+
+        plt, using_tex = configure_matplotlib(ink=INK, baseline=BASELINE, label=INK_2,
+                                              xtick=INK_2, ytick=MUTED)
+        pct = r"\%" if using_tex else "%"
+
+        def _smooth(x, y, n=400):
+            x = np.asarray(x, dtype=float)
+            y = np.asarray(y, dtype=float)
+            order = np.argsort(x)
+            x, y = x[order], y[order]
+            x_uniq, idx = np.unique(x, return_index=True)
+            y_uniq = y[idx]
+            spline = make_interp_spline(x_uniq, y_uniq, k=3)
+            x_smooth = np.linspace(x_uniq.min(), x_uniq.max(), n)
+            y_smooth = np.clip(spline(x_smooth), 0.0, 1.0)
+            return x_smooth, y_smooth
+
+        taus = curve_df.index.to_numpy()
+        x_p, y_p = _smooth(taus, curve_df["precision"])
+        x_r, y_r = _smooth(taus, curve_df["recall"])
+        x_f, y_f = _smooth(taus, curve_df["F1"])
+
+        fig, ax = plt.subplots(figsize=(7.0, 3.8))
+        (line_prec,) = ax.plot(x_p, y_p * 100, color=PRECISION_COLOR, linewidth=2.0, label="Precision")
+        (line_rec,) = ax.plot(x_r, y_r * 100, color=RECALL_COLOR, linewidth=2.0, label="Recall")
+        (line_f1,) = ax.plot(x_f, y_f * 100, color=F1_COLOR, linewidth=2.2, label="F1 score")
+
+        ax.set_ylim(0, 100)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel("Match-probability threshold")
+        ax.set_ylabel("Precision / Recall / F1")
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: f"{y:g}{pct}"))
+        ax.tick_params(axis="y", length=0)
+        ax.tick_params(axis="x", length=0)
+        ax.set_axisbelow(True)
+        ax.xaxis.grid(True, color=GRID, linewidth=0.6)
+        ax.yaxis.grid(True, color=GRID, linewidth=0.6)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+        ax.legend(handles=[line_prec, line_rec, line_f1], loc="best",
+                  frameon=False, fontsize=8, handlelength=1.6)
+
+        fig.tight_layout()
+        curve_pdf_path = os.path.join(os.path.dirname(args.report) or ".", "precision_recall_f1_by_threshold.pdf")
+        os.makedirs(os.path.dirname(curve_pdf_path) or ".", exist_ok=True)
+        fig.savefig(curve_pdf_path, bbox_inches="tight")
+        plt.close(fig)
+        print(f"[2] wrote threshold curve plot -> {curve_pdf_path}", flush=True)
+    else:
+        print("[2] skipping threshold curve plot: --report not set (needed for output path)",
+              flush=True)
+      
     metrics = group_ranking_eval(df_test, prob_filter)
     print(f"\n[2] group-ranking results ({model_name}, prob_filter={prob_filter}):", flush=True)
     for tag, label in [("r1", "unique highest prob"),
