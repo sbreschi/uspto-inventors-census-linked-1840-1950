@@ -58,6 +58,7 @@ import argparse
 import json
 import os
 import pickle
+import sys
 import time
 
 import numpy as np
@@ -676,7 +677,16 @@ def main(argv=None):
     df_test["predicted_probability"] = y_pred_proba
 
     # --- Plot Precision/Recall/F1 vs probability threshold (held-out test set only) ---
+    # Report-only: the model is already fitted and frozen above, so any failure here
+    # (missing _viz_common, missing plotting dep, plotting error) MUST degrade to a
+    # warning and never abort the run before the model is pickled.
     if args.report:
+      try:
+        # _viz_common lives in the sibling src/technical_validation/ package.
+        _tv_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               "..", "technical_validation")
+        if _tv_dir not in sys.path:
+            sys.path.insert(0, _tv_dir)
         from _viz_common import configure_matplotlib
         from matplotlib.ticker import FuncFormatter
         from scipy.interpolate import make_interp_spline
@@ -738,10 +748,13 @@ def main(argv=None):
         fig.savefig(curve_pdf_path, bbox_inches="tight")
         plt.close(fig)
         print(f"[2] wrote threshold curve plot -> {curve_pdf_path}", flush=True)
+      except Exception as _plot_err:
+        print(f"[2] skipping threshold curve plot: {type(_plot_err).__name__}: {_plot_err}",
+              flush=True)
     else:
         print("[2] skipping threshold curve plot: --report not set (needed for output path)",
               flush=True)
-      
+
     metrics = group_ranking_eval(df_test, prob_filter)
     print(f"\n[2] group-ranking results ({model_name}, prob_filter={prob_filter}):", flush=True)
     for tag, label in [("r1", "unique highest prob"),
