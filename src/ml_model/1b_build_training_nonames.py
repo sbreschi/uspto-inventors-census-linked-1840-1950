@@ -21,6 +21,13 @@ name-free, `diff_length`-bearing training table. If the input already has a prec
 `diff_length` and no names (i.e. the stage-4 table), this stage is a no-op on that front
 and simply passes it through.
 
+A per-row provenance column `source` is appended last:
+"https://patents.google.com/patent/US<pubnumber> | https://doi.org/10.18128/D014.V4.0R"
+(the patent's Google Patents page | the IPUMS full-count DOI), the same column stage 4
+adds to the deposit table. It is a pure function of `pubnumber` and never a model feature
+(stage 2 selects its feature list explicitly); it is the only difference from plain
+stage 1's output beyond the dropped names.
+
 Input is the stage-3 merged-features output (`3_merge_features.py` ->
 `matched_candidates_features.parquet`, or a per-year directory). It is a 5xx-million-row
 table whose labeled subset is tiny (`true_match` is non-null only for the
@@ -85,6 +92,11 @@ REQUIRED_COLUMNS = KEY_COLUMNS + FEATURE_SOURCE_COLUMNS + LABEL_COLUMNS
 # Read the names too (needed to derive diff_length); they are dropped after the compute.
 READ_COLUMNS = (KEY_COLUMNS + FEATURE_SOURCE_COLUMNS + NAME_COLUMNS + DERIVED_COLUMNS
                 + OPTIONAL_COLUMNS + LABEL_COLUMNS)
+
+# Per-row provenance, derived from `pubnumber`: Google Patents URL | IPUMS full-count DOI.
+# KEEP IN SYNC with src/4_select_ml_columns.py (digit-prefixed module, not importable).
+PATENT_URL_PREFIX = "https://patents.google.com/patent/US"
+IPUMS_DOI = "https://doi.org/10.18128/D014.V4.0R"
 
 # Default output lands in this ml_model/ folder (relative to the script, like
 # 2_train_classifier.py's DEF_OCC_DICT -- overridable via --output, not a hardcoded path).
@@ -209,6 +221,10 @@ def main(argv=None):
     print(f"[1b] groups (PatInvID, census_year): "
           f"{labeled.select(['PatInvID', 'census_year']).n_unique():,}", flush=True)
 
+    # Appended last: source = Google Patents URL | IPUMS DOI (pubnumber is Int64, non-null).
+    labeled = labeled.with_columns(
+        (pl.lit(PATENT_URL_PREFIX) + pl.col("pubnumber").cast(pl.String)
+         + pl.lit(" | " + IPUMS_DOI)).alias("source"))
     labeled.write_parquet(args.output, compression="zstd")
     _lap(f"wrote training table -> {args.output}", t0)
 
