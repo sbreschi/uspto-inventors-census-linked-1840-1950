@@ -28,11 +28,17 @@ consume this precomputed `diff_length` directly (`1_build_training.py` /
 `2_train_classifier.py` were made to accept it), so nothing personal-name-bearing
 leaves the pipeline yet every training feature is present.
 
-The kept set (up to 22 columns): 4 keys + `diff_length` + 13 feature sources + 2 labels
-+ 2 optional. `occ` (1850-1880 & 1940 only) and `is_hard_negative` are optional so older
+The kept set (up to 23 columns): 4 keys + `diff_length` + 13 feature sources + 2 optional
++ 2 labels + `source`. `occ` (1850-1880 & 1940 only) and `is_hard_negative` are optional so older
 feature tables without them still project. The required-column guard mirrors stage 1's
 (the two name columns ARE required in the INPUT so diff_length can be derived), so a
 table missing a needed feature source fails loudly here rather than downstream.
+
+A per-row provenance column `source` is appended last:
+"https://patents.google.com/patent/US<pubnumber> | https://doi.org/10.18128/D014.V4.0R"
+(the Google Patents page of the patent | the IPUMS full-count DOI). It is a pure function
+of `pubnumber`, is never read by the ML stages (they select their own column lists), and
+leaves every other column unchanged.
 
 NOTE (IPUMS redistribution): the kept set still includes census-derived fields
 (`occstr`, `histid`) that originate in restricted IPUMS USA extracts. Confirm your
@@ -73,12 +79,18 @@ LABEL_COLUMNS = ["true_histid", "true_match"]
 # (deceased-inventor flag), carried for the ML training builder's group logic, never a
 # model feature. Both optional so tables lacking them still project.
 OPTIONAL_COLUMNS = ["occ", "is_hard_negative"]
+# Per-row provenance, derived from `pubnumber`: Google Patents URL | IPUMS full-count DOI.
+PATENT_URL_PREFIX = "https://patents.google.com/patent/US"
+IPUMS_DOI = "https://doi.org/10.18128/D014.V4.0R"
+SOURCE_COLUMNS = ["source"]
 
 # Required in the INPUT table (names included -- needed to derive diff_length).
 REQUIRED_COLUMNS = KEY_COLUMNS + NAME_COLUMNS + FEATURE_SOURCE_COLUMNS + LABEL_COLUMNS
-# Present in the OUTPUT: names dropped, diff_length added in their place.
+# Present in the OUTPUT: names dropped, diff_length added in their place, source last.
 OUTPUT_COLUMNS = (KEY_COLUMNS + DERIVED_COLUMNS + FEATURE_SOURCE_COLUMNS
-                  + OPTIONAL_COLUMNS + LABEL_COLUMNS)
+                  + OPTIONAL_COLUMNS + LABEL_COLUMNS + SOURCE_COLUMNS)
+# Built here (not read from the input), so always kept.
+GENERATED_COLUMNS = DERIVED_COLUMNS + SOURCE_COLUMNS
 
 
 def _lap(label, t0):
@@ -133,14 +145,17 @@ def main(argv=None):
     # Precompute diff_length (abs name-length gap) exactly as stage 2's build_features
     # would (pandas .str.len() == char count -> polars str.len_chars(); cast to Int64
     # before subtracting so the UInt32 char counts don't underflow), then drop the names.
+    # `source` = Google Patents URL of the patent | IPUMS DOI (pubnumber is Int64, non-null).
     lf = lf.with_columns(
         (pl.col("inventor_name").str.len_chars().cast(pl.Int64)
-         - pl.col("census_name").str.len_chars().cast(pl.Int64)).abs().alias("diff_length"))
+         - pl.col("census_name").str.len_chars().cast(pl.Int64)).abs().alias("diff_length"),
+        (pl.lit(PATENT_URL_PREFIX) + pl.col("pubnumber").cast(pl.String)
+         + pl.lit(" | " + IPUMS_DOI)).alias("source"))
 
-    keep = [c for c in OUTPUT_COLUMNS if c == "diff_length" or c in present_set]
+    keep = [c for c in OUTPUT_COLUMNS if c in GENERATED_COLUMNS or c in present_set]
     dropped = [c for c in present if c not in set(keep)]
-    print(f"[4] keeping {len(keep)}/{len(present) + 1} columns "
-          f"(+diff_length, -{len(NAME_COLUMNS)} names); dropping {len(dropped)}: "
+    print(f"[4] keeping {len(keep)}/{len(present) + len(GENERATED_COLUMNS)} columns "
+          f"(+diff_length +source, -{len(NAME_COLUMNS)} names); dropping {len(dropped)}: "
           f"{dropped}", flush=True)
 
     lf.select(keep).sink_parquet(args.output, compression="zstd")

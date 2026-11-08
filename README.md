@@ -442,8 +442,11 @@ the full stage-2 schema.
 
 `4_select_ml_columns.py` produces the **publication / Zenodo projection**: it keeps only
 the columns the ML model consumes, **precomputes `diff_length` and drops the raw
-`inventor_name` / `census_name` strings** (no personal names leave the pipeline), and
-stream-writes a byte-stable, row-complete slim copy.
+`inventor_name` / `census_name` strings** (no personal names leave the pipeline),
+appends a per-row provenance column `source`
+(`https://patents.google.com/patent/US<pubnumber> | https://doi.org/10.18128/D014.V4.0R`,
+i.e. the patent's Google Patents page and the IPUMS full-count DOI), and stream-writes a
+byte-stable, row-complete slim copy.
 
 ```bash
 python 4_select_ml_columns.py \
@@ -620,7 +623,7 @@ directory and passed as CLI arguments; `data/*` is git-ignored.
 | File                                                | What it is                                                |
 | --------------------------------------------------- | --------------------------------------------------------- |
 | `patent_inventor_census_links_1850-1940_v1.parquet` | **Final linked dataset** (Step 6 output).                 |
-| `matched_candidates_ml.parquet`                     | ML feature/deposit table (Step 4 projection).             |
+| `matched_candidates_ml.parquet`                     | ML feature/deposit table (Step 4 projection, with `source`). |
 | `training_nonames.parquet`                          | Name-free ML training table.                              |
 | `ground_truth.csv`                                  | Manually verified ground-truth patent↔census matches.     |
 | `deceased_inventors.csv`                            | Reviewed deceased-inventor roster — hard-negative labels. |

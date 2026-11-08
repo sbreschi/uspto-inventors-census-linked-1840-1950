@@ -16,6 +16,7 @@ be dropped (geo/gender passthroughs, the bulky `occ_desc_*`/`pat_desc_*` strings
 runs the real CLI via subprocess, and asserts:
   * output schema == the keep-list (names + all extras dropped, `occ`/`is_hard_negative` kept);
   * `diff_length` is present and equals abs(len(inventor_name) - len(census_name));
+  * `source` == "https://patents.google.com/patent/US<pubnumber> | <IPUMS DOI>", last column;
   * `inventor_name` / `census_name` are ABSENT from the output;
   * row count unchanged (columns-only projection, loss-free);
   * kept values are byte-identical to the input (no reorder/mutation);
@@ -47,12 +48,17 @@ SCRIPT = os.path.join(SRC, "4_select_ml_columns.py")
 LOG_DIR_DEFAULT = os.path.join(HERE, "logs")
 
 # The columns stage 4 OUTPUTS (mirrors src/4_select_ml_columns.py OUTPUT_COLUMNS):
-# the raw names are dropped and diff_length is precomputed in their place.
+# the raw names are dropped and diff_length is precomputed in their place; the
+# provenance `source` column is appended last.
 KEEP = ["PatInvID", "pubnumber", "histid", "census_year",
         "diff_length", "leven_norm", "tkratio", "tksortratio",
         "surname_logfreq", "n_candidates", "county_distance", "pubyear", "birthyr",
         "ind1950", "occ1950", "occstr", "relatedness_short", "relatedness_long",
-        "occ", "is_hard_negative", "true_histid", "true_match"]
+        "occ", "is_hard_negative", "true_histid", "true_match", "source"]
+# Columns built by stage 4 (absent from the input).
+GENERATED = ["diff_length", "source"]
+SOURCE_PREFIX = "https://patents.google.com/patent/US"
+SOURCE_SUFFIX = " | https://doi.org/10.18128/D014.V4.0R"
 # Name columns: required in the INPUT (to derive diff_length) but dropped from OUTPUT.
 NAMES = ["inventor_name", "census_name"]
 # Extras present in a --keep-all-columns stage-3 table that stage 4 must drop.
@@ -175,9 +181,19 @@ def main(argv=None):
                    - full["census_name"].str.len_chars().cast(pl.Int64)).abs().rename("diff_length")
             if not got["diff_length"].cast(pl.Int64).equals(exp):
                 failures.append("diff_length values != abs name-length gap")
-        # Kept pass-through values byte-identical (skip diff_length, not in the input).
+        # source = Google Patents URL | IPUMS DOI, derived from pubnumber, no nulls.
+        if "source" not in got.columns:
+            failures.append("source missing from output")
+        else:
+            exp_src = (SOURCE_PREFIX + full["pubnumber"].cast(pl.String)
+                       + SOURCE_SUFFIX).rename("source")
+            if got["source"].null_count() or not got["source"].equals(exp_src):
+                failures.append("source values != Google Patents URL | IPUMS DOI")
+            if list(got.columns)[-1] != "source":
+                failures.append("source is not the last column")
+        # Kept pass-through values byte-identical (skip generated cols, not in the input).
         for c in KEEP:
-            if c != "diff_length" and c in got.columns and not got[c].equals(full[c]):
+            if c not in GENERATED and c in got.columns and not got[c].equals(full[c]):
                 failures.append(f"values changed for kept column {c}")
 
         # [2] optional columns absent -> still projects.
