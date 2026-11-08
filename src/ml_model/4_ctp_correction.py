@@ -55,6 +55,13 @@ histid preserved) plus the appended `from_ctp=True` supplements. It is written i
 both parquet (`--output`) and CSV (`--csv-output`, default: `--output` with a .csv
 extension) form.
 
+A per-row provenance column `source` is appended last (after the annotation columns):
+"https://patents.google.com/patent/US<pubnumber> | https://doi.org/10.18128/D014.V4.0R"
+(the patent's Google Patents page | the IPUMS full-count DOI, source of `histid`); on
+`from_ctp=True` supplement rows, whose `histid` was retrieved from the CTP crosswalks,
+" | https://doi.org/10.1016/j.eeh.2025.101717" (the Census Tree Project) is appended.
+It is a pure function of `pubnumber` and `from_ctp`; nothing else changes.
+
 CTP crosswalks: `--ctp-dir`/<pair>/<pair>.csv for the adjacent census-year pairs
 (header `histid{y1},histid{y2},clp,mlp,xgb,family_tree,direct_hint,profile_hint,
 implied`). Only the two histid columns are used (a link = the row exists; expose a
@@ -79,6 +86,12 @@ ORIG_COLS = ["histid", "PatInvID", "pubnumber", "pubyear", "census_year",
              "county_distance", "age_at_pat", "relatedness_short",
              "relatedness_long", "probability"]
 NEW_COLS = ["histid_ctp", "ctp_flag", "ctp_action", "from_ctp"]
+# Per-row provenance: Google Patents URL | IPUMS full-count DOI [| Census Tree Project DOI
+# on from_ctp rows]. KEEP IN SYNC with src/4_select_ml_columns.py (not importable).
+PATENT_URL_PREFIX = "https://patents.google.com/patent/US"
+IPUMS_DOI = "https://doi.org/10.18128/D014.V4.0R"
+CTP_DOI = "https://doi.org/10.1016/j.eeh.2025.101717"
+SOURCE_COLS = ["source"]
 
 
 def _lap(label, t0):
@@ -334,6 +347,12 @@ def main(argv=None):
 
     out = model_out if supp_out is None else pl.concat([model_out, supp_out],
                                                        how="vertical_relaxed")
+    # source last: patent page | IPUMS DOI, plus the CTP DOI where the histid came from CTP.
+    out = out.with_columns(
+        (pl.lit(PATENT_URL_PREFIX) + pl.col("pubnumber").cast(pl.String)
+         + pl.lit(" | " + IPUMS_DOI)
+         + pl.when(pl.col("from_ctp")).then(pl.lit(" | " + CTP_DOI)).otherwise(pl.lit("")))
+        .alias(SOURCE_COLS[0]))
     out.write_parquet(args.output)
     csv_path = args.csv_output or (
         args.output[:-len(".parquet")] + ".csv" if args.output.endswith(".parquet")
