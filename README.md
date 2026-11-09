@@ -4,7 +4,7 @@ This repository contains the record-linkage pipeline that matches historical USP
 patent inventors (1840–1950) to individuals in the U.S. decennial census
 (1850–1940,excluding the 1890 wave, destroyed by fire). It accompanies a (submitted) *Scientific Data*
 descriptor; the linked dataset is archived on Zenodo
-(<https://zenodo.org/uploads/21078985>).
+(<https://zenodo.org/uploads/21078984>).
 
 The pipeline is organised as the **six steps** of the descriptor's Methods section,
 preceded by a census pre-cleaning stage:
@@ -32,7 +32,7 @@ preceded by a census pre-cleaning stage:
 The core pipeline is a linear chain (Step 0 → 6) into which three optional feature/label
 add-ons feed at Step 3–4:
 
-<img src="docs/diagrams/pipeline_map.svg" width="260" alt="Pipeline map: Steps 0-6 from inputs to the final linked dataset">
+<p align="center"><img src="docs/diagrams/pipeline_map.svg" width="340" alt="Pipeline map: Steps 0-6 from inputs to the final linked dataset"></p>
 
 ### Step 1 detailed: Blocking & candidate identification
 
