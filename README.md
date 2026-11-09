@@ -44,19 +44,19 @@ Step 1 runs **four complementary name-matching algorithms** in parallel across g
 
 Step 3 combines **ground truth** (manually-verified matches) with two types of **answer-absent negatives** to create a labeled training set. This teaches the classifier to reject as well as rank:
 
-<p align="center"><img src="docs/diagrams/step3_training.svg" width="520" alt="Step 3: ground truth, orphans, and deceased hard negatives merged into the training dataset"></p>
+<p align="center"><img src="docs/diagrams/step3_training.svg" width="600" alt="Step 3: ground truth, orphans, and deceased hard negatives merged into the training dataset"></p>
 
 ### Step 4 detailed: Building features
 
 Step 4 assembles **25 features in 6 groups** from Step 2's output plus three add-on computations. The add-ons (relatedness, name rarity, deceased negatives) run in parallel and feed into the feature merge:
 
-<p align="center"><img src="docs/diagrams/step4_features.svg" width="500" alt="Step 4: relatedness and name-rarity add-ons merged into the 25-feature table"></p>
+<p align="center"><img src="docs/diagrams/step4_features.svg" width="680" alt="Step 4: relatedness and name-rarity add-ons merged into the 25-feature table"></p>
 
 ### Step 5 detailed: Predicting the most likely true match
 
 Step 5 trains a classifier on labeled data, then scores all candidates and selects the single best match per patent-inventor per census wave:
 
-<p align="center"><img src="docs/diagrams/step5_predict.svg" width="300" alt="Step 5: train the random-forest classifier, score all candidates, select top-1 per group"></p>
+<p align="center"><img src="docs/diagrams/step5_predict.svg" width="380" alt="Step 5: train the random-forest classifier, score all candidates, select top-1 per group"></p>
 
 Plain-text version of the same map (script order by file prefix):
 
