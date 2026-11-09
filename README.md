@@ -38,7 +38,7 @@ add-ons feed at Step 3–4:
 
 Step 1 runs **four complementary name-matching algorithms** in parallel across geographic scopes (county, state, nationwide), then merges the results. Each method processes one census year × one gender × one geographic scope per invocation:
 
-![Step 1: four blocking algorithms feeding the 2a collect stage](docs/diagrams/step1_blocking.svg)
+<p align="center"><img src="docs/diagrams/step1_blocking.svg" width="620" alt="Step 1: four blocking algorithms feeding the 2a collect stage"></p>
 
 ### Step 3 detailed: Building the training dataset
 
