@@ -604,7 +604,7 @@ python tests/smoke_test_name_rarity.py
 
 ## Data availability
 
-The linked dataset is hosted on Zenodo (<https://zenodo.org/uploads/21078985>) as a
+The linked dataset is hosted on Zenodo (<https://doi.org/10.5281/zenodo.21078984>) as a
 CSV, one row per matched patent-inventor ↔ census individual, keyed on
 `(PatInvID, histid, census_year)`. Released columns include `histid`, `PatInvID`,
 `pubnumber`, `pubyear`, `census_year`, `inventor_name`, `leven_simil`, `county_inv`,
@@ -618,11 +618,11 @@ samples) is deposited on **Zenodo**; the **code** lives in **this GitHub reposit
 The pipeline scripts expect the Zenodo files to be downloaded into a local `data/` 
 directory and passed as CLI arguments; `data/*` is git-ignored.
 
-**Zenodo deposit (<https://doi.org/10.5281/zenodo.21078985>):**
+**Zenodo deposit (<https://doi.org/10.5281/zenodo.21078984>):**
 
 | File                                                | What it is                                                |
 | --------------------------------------------------- | --------------------------------------------------------- |
-| `patent_inventor_census_links_1850-1940_v1.parquet` | **Final linked dataset** (Step 6 output).                 |
+| `patent_inventor_census_links_1850-1940_v2.parquet` | **Final linked dataset** (Step 6 output).                 |
 | `matched_candidates_ml.parquet`                     | ML feature/deposit table (Step 4 projection, with `source`). |
 | `training_nonames.parquet`                          | Name-free ML training table.                              |
 | `ground_truth.csv`                                  | Manually verified ground-truth patent↔census matches.     |
