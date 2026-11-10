@@ -629,7 +629,7 @@ directory and passed as CLI arguments; only `data/misc/` is tracked in git.
 | `deceased_inventors.csv`                            | Reviewed deceased-inventor roster — hard-negative labels. |
 | `validation_sample_deceased.csv`                    | Deceased-inventor estate-representative roster.           |
 | `USPTO_patent_inventors_1840_1950.zip`              | Public USPTO patent-inventor table.                       |
-| `USPTO_patent_titles_1840_1950.zip`                 | Public USPTO patent-title table.                          |
+| `USPTO_patent_titles_1840_1950.tsv`                 | Public USPTO patent-title table.                          |
 | `USPTO_patent_classes_1840_1950.zip`                | Public USPTO patent-class table.                          |
 | `occupation_dict.json`                              | Curated occupation/technology lookup.                     |
 | `IND1950.xlsx` / `OCC1950.xlsx`                     | IPUMS occupation code lookups.                            |
