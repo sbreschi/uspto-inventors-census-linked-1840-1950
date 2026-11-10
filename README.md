@@ -616,7 +616,7 @@ Parquet (and CSV) file, one row per matched patent-inventor ↔ census individua
 Research **data** (the linked dataset, its public inputs, and the label/validation
 samples) is deposited on **Zenodo**; the **code** lives in **this GitHub repository**. 
 The pipeline scripts expect the Zenodo files to be downloaded into a local `data/` 
-directory and passed as CLI arguments; only data/misc/ is tracked in git.
+directory and passed as CLI arguments; only `data/misc/` is tracked in git.
 
 **Zenodo deposit (<https://doi.org/10.5281/zenodo.21078984>):**
 
