@@ -2,21 +2,27 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the accompanying Scientific Data paper."
 title: "A record-linkage pipeline for matching USPTO patent inventors to U.S. census individuals"
 authors:
+authors:
   - family-names: Breschi
     given-names: Stefano
     affiliation: "Bocconi University"
+    orcid: "https://orcid.org/0000-0002-1642-4233"
   - family-names: Hellinga
     given-names: Zenne
     affiliation: "Utrecht University"
+    orcid: "https://orcid.org/0009-0003-3306-2566"
   - family-names: Morrison
     given-names: Andrea
-    affiliation: "University of Pavia and Icrios, Bocconi University"
+    affiliation: "University of Pavia; Università Bocconi Dipartimento di Management e Tecnologia"
+    orcid: "https://orcid.org/0000-0002-1878-6780"
   - family-names: Nagar
     given-names: Jay Prakash
     affiliation: "Duke University"
+    orcid: "https://orcid.org/0000-0002-3866-4107"
   - family-names: Tarasconi
     given-names: Gianluca
     affiliation: "IPQuants AG"
+    orcid: "https://orcid.org/0000-0003-2372-9278"
 keywords:
   # shared with the Zenodo data deposit (keep the two lists in sync)
   - Record linkage
