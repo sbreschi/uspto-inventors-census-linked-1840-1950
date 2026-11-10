@@ -2,9 +2,9 @@
 
 This repository contains the record-linkage pipeline that matches historical USPTO
 patent inventors (1840–1950) to individuals in the U.S. decennial census
-(1850–1940,excluding the 1890 wave, destroyed by fire). It accompanies a (submitted) *Scientific Data*
+(1850–1940, excluding the 1890 wave, destroyed by fire). It accompanies a (submitted) *Scientific Data*
 descriptor; the linked dataset is archived on Zenodo
-(<https://zenodo.org/uploads/21078984>).
+(<https://doi.org/10.5281/zenodo.21078984>).
 
 The pipeline is organised as the **six steps** of the descriptor's Methods section,
 preceded by a census pre-cleaning stage:
@@ -605,7 +605,7 @@ python tests/smoke_test_name_rarity.py
 ## Data availability
 
 The linked dataset is hosted on Zenodo (<https://doi.org/10.5281/zenodo.21078984>) as a
-CSV, one row per matched patent-inventor ↔ census individual, keyed on
+Parquet (and CSV) file, one row per matched patent-inventor ↔ census individual, keyed on
 `(PatInvID, histid, census_year)`. Released columns include `histid`, `PatInvID`,
 `pubnumber`, `pubyear`, `census_year`, `inventor_name`, `leven_simil`, `county_inv`,
 `state_inv`, `county_distance`, `age_at_pat`, `relatedness_short`, `relatedness_long`,
@@ -638,6 +638,10 @@ directory and passed as CLI arguments; `data/*` is git-ignored.
 **Kept in this repository (not on Zenodo):** the pipeline and analysis code, plus
 `data/misc/given_name_nicknames.json` and `data/misc/given_name_diminutives.json` —
 nickname/diminutive cluster lists for name matching in the widow–spouse validation.
+
+**In both places:** `occupation_dict.json` is deposited on Zenodo and also shipped in
+`data/misc/`, because `ml_model/2_train_classifier.py` and `ml_model/3_predict.py` load
+it from there by default. The two copies are identical.
 
 ## License & citation
 
