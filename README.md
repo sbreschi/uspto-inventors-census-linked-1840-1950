@@ -609,14 +609,14 @@ Parquet (and CSV) file, one row per matched patent-inventor ↔ census individua
 `(PatInvID, histid, census_year)`. Released columns include `histid`, `PatInvID`,
 `pubnumber`, `pubyear`, `census_year`, `inventor_name`, `leven_simil`, `county_inv`,
 `state_inv`, `county_distance`, `age_at_pat`, `relatedness_short`, `relatedness_long`,
-`probability`, `ctp_flag`, `histid_ctp`, `ctp_action`, and `from_ctp`.
+`probability`, `ctp_flag`, `histid_ctp`, `ctp_action`, `from_ctp`, and `source`.
 
 ### What lives where: Zenodo vs this repository
 
 Research **data** (the linked dataset, its public inputs, and the label/validation
 samples) is deposited on **Zenodo**; the **code** lives in **this GitHub repository**. 
 The pipeline scripts expect the Zenodo files to be downloaded into a local `data/` 
-directory and passed as CLI arguments; `data/*` is git-ignored.
+directory and passed as CLI arguments; only data/misc/ is tracked in git.
 
 **Zenodo deposit (<https://doi.org/10.5281/zenodo.21078984>):**
 
