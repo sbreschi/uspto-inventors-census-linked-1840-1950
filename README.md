@@ -623,6 +623,7 @@ directory and passed as CLI arguments; only `data/misc/` is tracked in git.
 | File                                                | What it is                                                |
 | --------------------------------------------------- | --------------------------------------------------------- |
 | `patent_inventor_census_links_1850-1940_v2.parquet` | **Final linked dataset** (Step 6 output).                 |
+| `patent_inventor_census_links_1850-1940_v2.zip`     | Final linked dataset as CSV (zipped).                     |
 | `matched_candidates_ml.parquet`                     | ML feature/deposit table (Step 4 projection, with `source`). |
 | `training_nonames.parquet`                          | Name-free ML training table.                              |
 | `ground_truth.csv`                                  | Manually verified ground-truth patent↔census matches.     |
