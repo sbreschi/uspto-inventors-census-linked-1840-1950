@@ -44,8 +44,8 @@ keywords:
 repository-code: "https://github.com/sbreschi/uspto-inventors-census-linked-1840-1950"
 license: MIT
 doi: 10.5281/zenodo.21263303
-version: "1.1.0"
-date-released: "2026-11-10"
+version: "1.1.1"
+date-released: "2026-11-11"
 # TODO: add the paper DOI to preferred-citation once the paper is accepted.
 preferred-citation:
   type: article

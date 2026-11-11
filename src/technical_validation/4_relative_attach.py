@@ -39,7 +39,9 @@ comparison); this stage classifies and records ALL household relatives as the
 audit record behind it. The `pair_concordant`/`concordant`/`checkable` columns
 here are informational all-relatives previews at this run's --cutoff, so
 `checkable` is a superset of stage 5's spouse-checkable set. Heavy census collects use the polars streaming
-engine (partitioned-directory scans panic the in-memory hash join -- see CLAUDE.md).
+engine: on census parquet stored as partitioned directories (thousands of part files,
+some zero-length), polars' in-memory hash join can panic non-deterministically, while
+the streaming join path is unaffected.
 All paths are CLI arguments; nothing is hardcoded.
 """
 

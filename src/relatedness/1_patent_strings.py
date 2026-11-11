@@ -14,6 +14,12 @@ Inputs (all under ipums_match/data, override via CLI):
   --uspc-names  misc/uspc_class_names.xlsx           (uspc_class, title)
   --nber-names  misc/nber_category.txt               (Cat, SubCat, SubCatName, CatNameShort, CatNameLong)
 
+The Zenodo-deposited copies of these files can be passed as-is: the zipped
+titles/classes tables are read directly (single-member zip, compression inferred),
+and the per-row provenance column `source` that every deposited table carries is
+dropped on read (it is not an input to the strings and would otherwise collide
+across the merges), as are rows left entirely empty once it is dropped.
+
 Optionally restrict the output to patents that actually appear in a
 matched_candidates table (--matched-candidates) to keep the file small.
 
@@ -36,15 +42,30 @@ DEF_USPC_NAMES = os.path.join(DATA, "misc", "uspc_class_names.xlsx")
 DEF_NBER_NAMES = os.path.join(DATA, "misc", "nber_category.txt")
 
 
+def drop_provenance(df):
+    """Drop the deposit's per-row provenance column `source` (if present) and any
+    row that is then entirely empty. A no-op on the pre-deposit input files."""
+    if "source" in df.columns:
+        df = df.drop(columns=["source"]).dropna(how="all").reset_index(drop=True)
+    return df
+
+
 def read_titles(path):
     """Read the patent-titles table, picking the separator by extension.
 
     The clearpat deposit (`patent_titles_clearpat.csv`) is a properly-quoted
     comma CSV (titles with embedded commas are double-quoted); the legacy
-    `USPTO_patent_titles_1840_1950.tsv` is tab-separated. Both expose
-    `pubnumber, title`."""
+    `USPTO_patent_titles_1840_1950.tsv` (or its Zenodo `.zip`) is tab-separated.
+    Both expose `pubnumber, title`."""
     sep = "," if path.lower().endswith(".csv") else "\t"
-    return pd.read_csv(path, sep=sep)
+    return drop_provenance(pd.read_csv(path, sep=sep))
+
+
+def read_nber_names(path):
+    """Read the NBER category table. Once a provenance-only trailing row is dropped
+    the (Cat, SubCat) keys are restored to int64, as in the pre-deposit file."""
+    nber = drop_provenance(pd.read_table(path))
+    return nber.astype({"Cat": "int64", "SubCat": "int64"})
 
 
 def remove_duplicate_words(text):
@@ -136,9 +157,9 @@ def main(argv=None):
     pct = round(titles["title"].isna().sum() / max(len(titles), 1) * 100, 2)
     print(f"{pct}% of patents have no title")
 
-    uspc_nber = pd.read_csv(args.classes, sep="\t")        # pubnumber, uspc_class, SubCat, Cat
-    nber_names = clean_nber(pd.read_table(args.nber_names))
-    uspc_names = clean_uspc(pd.read_excel(args.uspc_names))
+    uspc_nber = drop_provenance(pd.read_csv(args.classes, sep="\t"))  # pubnumber, uspc_class, SubCat, Cat
+    nber_names = clean_nber(read_nber_names(args.nber_names))
+    uspc_names = clean_uspc(drop_provenance(pd.read_excel(args.uspc_names)))
 
     patents = titles.merge(uspc_nber, how="left", on="pubnumber")
     patents = patents.merge(uspc_names, how="left", on="uspc_class")
